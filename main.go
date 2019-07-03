@@ -55,7 +55,7 @@ func configtest(cmd_str string) []HostStruct {
 	}
 	// fmt.Println("get value: ", val)
 	cmd := ""	
-    if len(cmd_str) != 0 {
+	if len(cmd_str) != 0 {
 		cmd,_ = cfg.Get("test_hosts", cmd_str)
 	} 
 	hostName := strings.Split(val, ";")
@@ -81,7 +81,7 @@ func configtest(cmd_str string) []HostStruct {
 
 func main() {
 	cmd := os.Args[1:]
-    cmd_str := strings.Join(cmd, " ")
+	cmd_str := strings.Join(cmd, " ")
 	strat := time.Now()
 	var wgStatus sync.WaitGroup
 	x := configtest(cmd_str)
