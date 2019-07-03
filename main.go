@@ -44,7 +44,7 @@ func CheckServer(h *HostStruct) bool {
 	}
 }
 
-func configtest() []HostStruct {
+func configtest(cmd_str string) []HostStruct {
 	configfile := "hosts_info.conf"
 	var hostSlice []HostStruct
 	cfg := goconfigparser.New()
@@ -54,10 +54,10 @@ func configtest() []HostStruct {
 		fmt.Println(err)
 	}
 	// fmt.Println("get value: ", val)
-	cmd, err := cfg.Get("test_hosts", "cmd")
-	if err != nil {
-		fmt.Println(err)
-	}
+	cmd := ""	
+    if len(cmd_str) != 0 {
+		cmd,_ = cfg.Get("test_hosts", cmd_str)
+	} 
 	hostName := strings.Split(val, ";")
 	// fmt.Println(hostSlice)
 	for _, host := range hostName {
@@ -80,15 +80,16 @@ func configtest() []HostStruct {
 }
 
 func main() {
+	cmd := os.Args[1:]
+    cmd_str := strings.Join(cmd, " ")
 	strat := time.Now()
 	var wgStatus sync.WaitGroup
-	x := configtest()
+	x := configtest(cmd_str)
 	for i := 0; i < len(x); i++ {
 		wgStatus.Add(1)
 		go x[i].setstatus(&wgStatus)
 	}
 	wgStatus.Wait() // 等待状态信息更新完毕
-	cmd := os.Args[1:]
 	if len(cmd) == 0 {
 		for i := 0; i < len(x); i++ {
 			if x[i].status == true {
@@ -98,7 +99,7 @@ func main() {
 			}
 		}
 		fmt.Println("Total Time：  ", time.Now().Sub(strat))
-	} else if strings.Join(cmd, " ") == "run" {
+	} else {
 		var wg sync.WaitGroup
 		for i := 0; i < len(x); i++ {
 			if x[i].status == true {
@@ -184,7 +185,7 @@ func remoteExcute(wg *sync.WaitGroup, h HostStruct) {
 		var stdoutBuff bytes.Buffer
 		session.Stdout = &stdoutBuff
 		session.Run(h.cmd)
-		fmt.Printf("%v -->\n\t %v", h.IP, session.Stdout)
+		fmt.Printf("%v -->\t %v", h.IP, session.Stdout)
 		wg.Done() // 计数器减一
 		return
 	}
